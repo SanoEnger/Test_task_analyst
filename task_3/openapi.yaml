@@ -1,0 +1,131 @@
+openapi: 3.0.3
+info:
+  title: User Registration API
+  description: API для регистрации новых пользователей в системе.
+  version: 1.0.0
+servers:
+  - url: https://api.marketplace.example.com/v1
+paths:
+  /auth/register:
+    post:
+      summary: Регистрация нового пользователя
+      description: Создает новый аккаунт пользователя на основе переданных данных.
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationRequest'
+      responses:
+        '201':
+          description: Пользователь успешно создан
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegistrationResponse'
+        '400':
+          description: Ошибка валидации входных данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '409':
+          description: Пользователь с таким Email или телефоном уже существует
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Внутренняя ошибка сервера
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    RegistrationRequest:
+      type: object
+      required:
+        - firstName
+        - lastName
+        - email
+        - password
+        - confirmPassword
+        - phoneNumber
+        - gender
+        - dateOfBirth
+        - agreedToTerms
+      properties:
+        firstName:
+          type: string
+          example: "Иван"
+          description: Имя пользователя
+        lastName:
+          type: string
+          example: "Иванов"
+          description: Фамилия пользователя
+        email:
+          type: string
+          format: email
+          example: "ivanov@example.com"
+          description: Электронная почта (уникальный идентификатор)
+        password:
+          type: string
+          format: password
+          minLength: 8
+          example: "StrongP@ss123"
+          description: Пароль (минимум 8 символов, должен содержать цифры и спецсимволы)
+        confirmPassword:
+          type: string
+          format: password
+          example: "StrongP@ss123"
+          description: Подтверждение пароля
+        phoneNumber:
+          type: string
+          pattern: '^\+7 \(\d{3}\) \d{3}-\d{4}$'
+          example: "+7 (999) 123-4567"
+          description: Номер телефона в международном формате
+        gender:
+          type: string
+          enum: [Male, Female, Other]
+          example: "Male"
+          description: Пол пользователя
+        dateOfBirth:
+          type: string
+          format: date
+          example: "1990-01-01"
+          description: Дата рождения (ГГГГ-ММ-ДД)
+        agreedToTerms:
+          type: boolean
+          example: true
+          description: Согласие с условиями использования и политикой конфиденциальности
+
+    RegistrationResponse:
+      type: object
+      properties:
+        userId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        message:
+          type: string
+          example: "User registered successfully"
+        status:
+          type: string
+          example: "success"
+
+    ErrorResponse:
+      type: object
+      properties:
+        errorCode:
+          type: string
+          example: "VALIDATION_ERROR"
+        message:
+          type: string
+          example: "Field 'email' is invalid"
+        details:
+          type: object
+          description: Дополнительная информация об ошибках (поля и причины)
